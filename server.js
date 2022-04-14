@@ -6,6 +6,7 @@ const bosyParser = require('body-parser');
 const { setStatic } = require('./utils/static');
 const todoRouter = require('./routes/todoRouter');
 const indexRouter = require('./routes/index');
+const sequelize = require('./utils/dbconnect');
 
 const app = express();
 
@@ -24,6 +25,10 @@ setStatic(app);
 
 app.use('/admin', todoRouter);
 app.use('/', indexRouter);
-app.get('/', indexRouter);
 
-app.listen(3000, () => console.log(`server is runing port: 3000`));
+sequelize
+	.sync()
+	.then(result => {
+		app.listen(3000, () => console.log(`server is runing port: 3000`));
+	})
+	.catch(err => console.log(err));

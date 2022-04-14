@@ -1,35 +1,39 @@
 const Todo = require('../model/todoModels');
 
-function addTodo(req, res) {
-	const todo = new Todo(req.body.todo);
-	todo.save();
-	return res.redirect('/');
-}
+exports.addTodo = (req, res) => {
+	if (!req.body.todo) return redirect('/');
+	console.log(req.body.todo);
+	Todo.create({ text: req.body.todo })
+		.then(result => {
+			console.log(result);
+			res.redirect('/');
+		})
+		.catch(err => console.log(err));
+};
 
-async function getAll(req, res) {
-	const data = await Todo.fechAll();
-	res.render('index', { pageTitle: 'کارهای روزمره', todos: data.rows });
-}
+exports.deleteTodo = (req, res) => {
+	Todo.destroy({ where: { id: req.params.id } })
+		.then(res.redirect('/'))
+		.catch(err => console.log(err));
+};
 
-async function deleteTodo(req, res) {
-	try {
-		console.log(req.params.id);
-		const resualt = await Todo.deleteTodo(req.params.id);
-		res.redirect('/');
-	} catch (error) {
-		res.send(error);
-	}
-}
-async function complateTodo(req, res) {
-	await Todo.complateTodo(req.params.id);
-	res.redirect('/');
-	try {
-	} catch (error) {}
-}
+exports.complateTodo = (req, res) => {
+	Todo.findByPk(req.params.id).then(todo => {
+		todo.cmpleted = true;
+		console.log(todo);
+		return todo.save().then(() => res.redirect('/'));
+	});
+};
 
-module.exports = {
-	getAll,
-	addTodo,
-	deleteTodo,
-	complateTodo,
+exports.getIndex = (req, res) => {
+	Todo.count({ where: { cmpleted: true } }).then(completedTodos => {
+		Todo.findAll().then(todos => {
+			res.render('index', {
+				pageTitle: 'کارهای روزمره',
+				todos,
+				completedTodos,
+				remainigTodos: todos.length - completedTodos,
+			});
+		});
+	});
 };
