@@ -1,9 +1,9 @@
-const { Sequelize } = require('sequelize');
+const mongoose = require('mongoose');
 
-const sequelize = new Sequelize('shab', 'postgres', '123698741', {
-	dialect: 'postgres',
-	host: 'localhost',
-	port: '5433',
-});
-
-module.exports = sequelize;
+mongoose
+	.connect('mongodb://localhost/Todo', {
+		useNewUrlParser: true, // <-- no longer necessary
+		useUnifiedTopology: true, // <-- no longer necessary
+	})
+	.then(() => console.log('db connect'))
+	.catch(err => console.log(err));
