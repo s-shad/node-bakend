@@ -1,39 +1,43 @@
 const Todo = require('../model/todoModels');
 
-exports.addTodo = (req, res) => {
+exports.addTodo = async (req, res) => {
 	if (!req.body.todo) return redirect('/');
-	console.log(req.body.todo);
-	Todo.create({ text: req.body.todo })
-		.then(result => {
-			console.log(result);
-			res.redirect('/');
-		})
-		.catch(err => console.log(err));
+
+	try {
+		await Todo.create({ text: req.body.todo });
+		res.redirect('/');
+	} catch (err) {
+		console.log(err);
+	}
 };
 
-exports.deleteTodo = (req, res) => {
-	Todo.destroy({ where: { id: req.params.id } })
-		.then(res.redirect('/'))
-		.catch(err => console.log(err));
+exports.deleteTodo = async (req, res) => {
+	try {
+		await Todo.destroy({ where: { id: req.params.id } });
+		res.redirect('/');
+	} catch (err) {
+		console.log(err);
+	}
 };
 
-exports.complateTodo = (req, res) => {
-	Todo.findByPk(req.params.id).then(todo => {
+exports.complateTodo = async (req, res) => {
+	try {
+		const todo = await Todo.findByPk(req.params.id);
 		todo.cmpleted = true;
-		console.log(todo);
-		return todo.save().then(() => res.redirect('/'));
-	});
+		await todo.save();
+		res.redirect('/');
+	} catch (err) {
+		console.log(err);
+	}
 };
 
-exports.getIndex = (req, res) => {
-	Todo.count({ where: { cmpleted: true } }).then(completedTodos => {
-		Todo.findAll().then(todos => {
-			res.render('index', {
-				pageTitle: 'کارهای روزمره',
-				todos,
-				completedTodos,
-				remainigTodos: todos.length - completedTodos,
-			});
-		});
+exports.getIndex = async (req, res) => {
+	const completedTodos = await Todo.count({ where: { cmpleted: true } });
+	const todos = await Todo.findAll();
+	res.render('index', {
+		pageTitle: 'کارهای روزمره',
+		todos,
+		completedTodos,
+		remainigTodos: todos.length - completedTodos,
 	});
 };
